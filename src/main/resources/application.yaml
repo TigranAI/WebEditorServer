@@ -1,0 +1,26 @@
+server:
+  port: 80
+  servlet:
+    session:
+      tracking-modes: cookie
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/aisd
+    username: postgres
+    password: root
+    hikari:
+      maximum-pool-size: 20
+
+  thymeleaf:
+    prefix: file:./resources/templates
+    cache: false
+
+  mvc:
+    static-path-pattern: file:./resources/static
