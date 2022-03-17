@@ -19,8 +19,9 @@ spring:
       maximum-pool-size: 20
 
   thymeleaf:
-    prefix: file:./resources/templates
+    prefix: file:./resources/templates/
     cache: false
 
-  mvc:
-    static-path-pattern: file:./resources/static
+  web:
+    resources:
+      static-locations: file:./resources/static/
