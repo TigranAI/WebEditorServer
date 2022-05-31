@@ -1,5 +1,7 @@
-.gradle
-build/
-.idea
-/gradle/
-/resources/static/node_modules/
+/target
+/.idea
+/.mvn
+*.iml
+/static/node_modules/
+/static/package-lock.json
+/static/editor/

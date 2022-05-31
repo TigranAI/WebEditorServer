@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .editor-page{
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .editor {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="editor-page">
+<div id="container" class="editor"></div>
+<script th:src="@{~/editor/scripts/main.bundle.js}"></script>
+</body>
+</html>
