@@ -3,26 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <style>
-        .editor-page{
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
-
-        .editor {
-            height: 100%;
-            width: 100%;
-        }
-    </style>
+    <script th:src="@{~/editor/node_modules/monaco-editor/min/vs/loader.js}"></script>
+    <script defer type="module" th:src="@{~/editor/js/editor.js}"></script>
+    <script defer type="module" th:src="@{~/editor/js/main.js}"></script>
 </head>
-<body class="editor-page">
-<select class="form-select" id="langSelector">
-    <option value="cpp" selected>C++</option>
-    <option value="java">Java 11</option>
-    <option value="csharp">C#</option>
-</select>
-<div id="container" class="editor"></div>
-<script th:src="@{~/editor/scripts/main.bundle.js}"></script>
+<body class="editor-page h-100">
+<div class="d-flex flex-column h-100">
+    <select class="form-select bg-dark text-white shadow-none border-light mb-1 flex-shrink-1 rounded-0" id="langSelector">
+        <option value="cpp" selected>C++</option>
+        <option value="java">Java 11</option>
+        <option value="csharp">C#</option>
+    </select>
+
+    <div id="container" class="w-100 border border-light flex-grow-1"></div>
+
+    <div class="input-group w-100 d-flex mt-1 flex-shrink-1">
+        <div class="form-floating me-1 flex-grow-1">
+            <textarea class="form-control bg-dark text-white shadow-none scroller rounded-0"
+                      placeholder="Введите данные сюда" id="input" style="height: 120px"></textarea>
+            <label for="input">Входные данные</label>
+        </div>
+        <div class="btn-group-vertical flex-shrink-1 rounded-0">
+            <button type="button" class="btn btn-dark shadow-none border-light rounded-0" id="run">
+                <span class="spinner-border spinner-border-sm visually-hidden" role="status" aria-hidden="true"
+                      id="runSpinner"></span>
+                Запустить
+            </button>
+            <button type="button" class="btn btn-dark shadow-none border-light mt-1 rounded-0" id="submit">
+                <span class="spinner-border spinner-border-sm visually-hidden" role="status" aria-hidden="true"
+                      id="submitSpinner"></span>
+                Отправить
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

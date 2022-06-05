@@ -4,4 +4,5 @@
 *.iml
 /static/node_modules/
 /static/package-lock.json
-/static/editor/
+/static/editor/dist
+/output
