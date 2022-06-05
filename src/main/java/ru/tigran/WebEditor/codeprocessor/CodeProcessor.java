@@ -10,10 +10,12 @@ import ru.tigran.WebEditor.codeprocessor.implementation.JavaCodeProcessor;
 import ru.tigran.WebEditor.controller.dto.ProblemData;
 import ru.tigran.WebEditor.controller.dto.TestResult;
 import ru.tigran.WebEditor.database.redis.entity.Test;
+import ru.tigran.WebEditor.others.F;
 import ru.tigran.WebEditor.others.IProcessCreator;
 import ru.tigran.WebEditor.others.IResponseEntityConverter;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -50,6 +52,10 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
         ResponseEntity<String> result = toResponseEntity();
         clear();
         return result;
+    }
+
+    public boolean testsPassed() {
+        return tests.values().stream().allMatch(TestResult::isPass);
     }
 
     @Override
@@ -96,7 +102,7 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
                 return;
             }
             process.destroy();
-            code = initErrorMessage() ? StatusCode.COMPILATION_ERROR : StatusCode.COMPILATION_SUCCESS;
+            code = initErrorMessage(process.exitValue()) ? StatusCode.COMPILATION_ERROR : StatusCode.COMPILATION_SUCCESS;
         } catch (Exception e) {
             e.printStackTrace();
             errorMessage = e.getMessage();
@@ -115,7 +121,7 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
                 return;
             }
             process.destroy();
-            code = initErrorMessage() ? StatusCode.EXECUTION_ERROR : StatusCode.EXECUTION_SUCCESS;
+            code = initErrorMessage(process.exitValue()) ? StatusCode.EXECUTION_ERROR : StatusCode.EXECUTION_SUCCESS;
         } catch (Exception e) {
             e.printStackTrace();
             errorMessage = e.getMessage();
@@ -201,17 +207,33 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
         }
     }
 
-    private boolean initErrorMessage() throws Exception {
-        File error = new File(String.format("%s\\err.log", directory));
-        BufferedReader reader = new BufferedReader(new FileReader(error));
-        List<String> lines = reader.lines().collect(Collectors.toList());
-        reader.close();
+    private boolean initErrorMessage(int exitCode) throws Exception {
         boolean hasError = false;
-        if (lines.size() > 0) {
+        String error = getFile("err.log");
+        if (error.equals("") && exitCode != 0){
             hasError = true;
-            errorMessage = String.join("\n", lines);
+            errorMessage = getFile("out.txt");
+            if (getExtension() == Extension.CSHARP)
+                errorMessage = errorMessage.substring(F.nthIndexOf(errorMessage, "\n", 8) + 2);
+        }
+        if (!error.equals("")) {
+            hasError = true;
+            errorMessage = error;
         }
         return hasError;
+    }
+
+    protected String getFile(String name) {
+        try {
+            File error = new File(String.format("%s\\%s", directory, name));
+            BufferedReader reader = new BufferedReader(new FileReader(error));
+            List<String> lines = reader.lines().collect(Collectors.toList());
+            reader.close();
+            return String.join("\n", lines);
+        } catch (Exception e){
+            e.printStackTrace();
+            return "";
+        }
     }
 
     public static CodeProcessor of(ProblemData problemData) throws IOException {
@@ -240,9 +262,5 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
                 return new JavaCodeProcessor();
         }
         return null;
-    }
-
-    public boolean testsPassed() {
-        return tests.values().stream().allMatch(TestResult::isPass);
     }
 }

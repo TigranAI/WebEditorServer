@@ -11,11 +11,18 @@ public class CSharpCodeProcessor extends CodeProcessor {
 
     @Override
     protected String[] getCompilationCommand() {
-        return new String[0];
+        return new String[]{
+                "csc",
+                "/utf8output",
+                String.format("/out:%s\\solution.exe", directory),
+                String.format("%s\\solution.cs", directory)
+        };
     }
 
     @Override
     protected String[] getExecutionCommand() {
-        return new String[0];
+        return new String[] {
+                String.format("%s\\solution.exe", directory)
+        };
     }
 }
