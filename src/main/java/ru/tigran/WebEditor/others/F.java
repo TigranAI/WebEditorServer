@@ -7,4 +7,8 @@ public class F {
             pos = source.indexOf(substr, pos + 1);
         return pos;
     }
+
+    public static int lastIndexOfTo(String source, String substr, int to) {
+        return source.substring(0, to).lastIndexOf(substr);
+    }
 }

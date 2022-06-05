@@ -53,7 +53,7 @@ public class MainController {
         if (processor == null) return CodeProcessor.NoLanguageResponse(problemData.getLanguage());
         ResponseEntity<String> result = processor.run(testRepository.findAllById(List.of(problem.getTests())));
         if (processor.testsPassed())
-            solutionRepository.save(new Solution(processor.getDirectory(), problemData.getCode(), problemData.getTaskId()));
+            solutionRepository.save(Solution.of(processor, problemData));
         return result;
     }
 

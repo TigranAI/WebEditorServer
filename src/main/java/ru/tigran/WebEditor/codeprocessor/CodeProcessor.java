@@ -15,7 +15,6 @@ import ru.tigran.WebEditor.others.IProcessCreator;
 import ru.tigran.WebEditor.others.IResponseEntityConverter;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -91,6 +90,15 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
     protected abstract String[] getCompilationCommand();
 
     protected abstract String[] getExecutionCommand();
+
+    protected void writeCode(String code) throws IOException {
+        File file = new File(String.format("%s\\solution.%s", directory, getExtension().get()));
+        if (file.createNewFile()) {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+            writer.write(code);
+            writer.close();
+        }
+    }
 
     private void compile() {
         try {
@@ -189,15 +197,6 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
         }
     }
 
-    private void writeCode(String code) throws IOException {
-        File file = new File(String.format("%s\\solution.%s", directory, getExtension().get()));
-        if (file.createNewFile()) {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-            writer.write(code);
-            writer.close();
-        }
-    }
-
     private void writeInput(String input) throws IOException {
         File file = new File(String.format("%s\\in.txt", directory));
         if (file.createNewFile()) {
@@ -207,7 +206,7 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
         }
     }
 
-    private boolean initErrorMessage(int exitCode) throws Exception {
+    private boolean initErrorMessage(int exitCode) {
         boolean hasError = false;
         String error = getFile("err.log");
         if (error.equals("") && exitCode != 0){
