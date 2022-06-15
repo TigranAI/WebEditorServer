@@ -1,8 +1,14 @@
-require.config({ paths: { vs: 'editor/node_modules/monaco-editor/min/vs' } });
+require.config({ paths: { vs: '/editor/node_modules/monaco-editor/min/vs' } });
 
 require(['vs/editor/editor.main'], function () {
+	let model
+	if (window.solution != null)
+		model = monaco.editor.createModel(window.solution.code, window.solution.language, monaco.Uri.parse('inmemory:file.txt'))
+	else
+		model = monaco.editor.createModel("", 'cpp', monaco.Uri.parse('inmemory:file.txt'))
+		
     window.editorInstance = monaco.editor.create(document.getElementById("container"), {
-        model: monaco.editor.createModel("", 'cpp', monaco.Uri.parse('inmemory:file.txt')),
+        model: model,
         theme: "vs-dark",
         accessibilityPageSize: 0,
         minimap: {

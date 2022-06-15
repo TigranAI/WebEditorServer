@@ -1,10 +1,13 @@
 package ru.tigran.WebEditor.controller.dto;
 
+import org.springframework.web.bind.annotation.RequestBody;
+
 public class ProblemData {
     private String code;
     private String language;
     private String input;
     private Integer taskId;
+    private String[] tests;
 
     public String getCode() {
         return code;
@@ -36,6 +39,14 @@ public class ProblemData {
 
     public void setTaskId(Integer taskId) {
         this.taskId = taskId;
+    }
+
+    public String[] getTests() {
+        return tests;
+    }
+
+    public void setTests(String[] tests) {
+        this.tests = tests;
     }
 
     @Override

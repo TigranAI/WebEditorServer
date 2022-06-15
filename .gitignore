@@ -1,8 +1,8 @@
 /target
-/.idea
+*/.idea
 /.mvn
 *.iml
-/static/node_modules/
-/static/package-lock.json
-/static/editor/dist
+/static_editor/node_modules/
+/static_editor/package-lock.json
+/static_editor/editor/dist
 /output

@@ -35,6 +35,16 @@ public class MainController {
         return "editor :: monaco";
     }
 
+    @GetMapping("/single")
+    public String singleEditor() {
+        return "editor :: single";
+    }
+
+    @GetMapping("/diff")
+    public String diffEditor() {
+        return "editor :: diff";
+    }
+
     @PostMapping("/run")
     @ResponseBody
     public ResponseEntity<String> runCode(@RequestBody ProblemData problemData) throws Exception {
@@ -57,4 +67,11 @@ public class MainController {
         return result;
     }
 
+    @PostMapping("/new/test")
+    @ResponseBody
+    public ResponseEntity<String> testNew(@RequestBody ProblemData problemData) throws Exception {
+        CodeProcessor processor = CodeProcessor.of(problemData);
+        if (processor == null) return CodeProcessor.NoLanguageResponse(problemData.getLanguage());
+        return processor.runTestMode(problemData.getTests());
+    }
 }

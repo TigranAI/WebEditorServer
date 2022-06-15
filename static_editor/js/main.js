@@ -8,6 +8,9 @@ let testResults = $('#testResults')
 runButton.click(onRunClicked)
 submitButton.click(onSubmitClicked)
 
+if (window.solution != null)
+	langSelector.val(window.solution.language)
+
 function onRunClicked() {
     setLoading()
     $.ajax({

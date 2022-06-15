@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="single">
+    <select class="form-select bg-dark text-white shadow-none border-light mb-1 flex-shrink-1 rounded-0" id="langSelector">
+        <option value="cpp" selected>C++</option>
+        <option value="java">Java 11</option>
+        <option value="csharp">C#</option>
+    </select>
+    <div id="container" class="w-100 border border-light flex-grow-1"></div>
+
+    <script th:src="@{~/editor/node_modules/monaco-editor/min/vs/loader.js}"></script>
+    <script defer type="module" th:src="@{~/editor/js/editor.js}"></script>
+    <script defer type="module" th:src="@{~/editor/js/main.js}"></script>
+</th:block>

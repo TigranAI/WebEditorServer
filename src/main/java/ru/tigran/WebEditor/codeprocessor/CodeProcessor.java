@@ -17,10 +17,7 @@ import ru.tigran.WebEditor.others.IResponseEntityConverter;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -29,11 +26,19 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
     protected String errorMessage = null;
     protected String directory;
     protected HashMap<String, TestResult> tests = new HashMap<>();
+    protected List<String> outputs = new LinkedList<>();
     private boolean isSubmitMode = false;
 
     protected CodeProcessor() {
         directory = String.format("output\\%s", UUID.randomUUID());
         new File(directory).mkdirs();
+        try {
+            new File(String.format("%s\\in.txt", directory)).createNewFile();
+            new File(String.format("%s\\out.txt", directory)).createNewFile();
+            new File(String.format("%s\\err.log", directory)).createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public ResponseEntity<String> run() {
@@ -49,6 +54,14 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
         compile();
         tests.forEach(this::executeTest);
         ResponseEntity<String> result = toResponseEntity();
+        clear();
+        return result;
+    }
+
+    public ResponseEntity<String> runTestMode(String[] tests) {
+        compile();
+        for (String test : tests) executeTest(test);
+        ResponseEntity<String> result = toResponseEntityTest();
         clear();
         return result;
     }
@@ -71,9 +84,24 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
         }
     }
 
+    public ResponseEntity<String> toResponseEntityTest() {
+        if (code == StatusCode.COMPILATION_ERROR)
+            return new ResponseEntity<>(getErrorMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(getOutputs(), HttpStatus.OK);
+    }
+
     private String getTests() {
         try {
             return new ObjectMapper().writeValueAsString(tests.values());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    private String getOutputs() {
+        try {
+            return new ObjectMapper().writeValueAsString(outputs);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return "";
@@ -105,7 +133,7 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
             Process process = createProcess(getCompilationCommand());
             if (!process.waitFor(20, TimeUnit.SECONDS)) {
                 process.destroy();
-                errorMessage = "Максимально доспустимое время компиляции превышено!";
+                errorMessage = "Максимально допустимое время компиляции превышено!";
                 code = StatusCode.COMPILATION_TIMEOUT;
                 return;
             }
@@ -124,7 +152,7 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
             Process process = createProcess(getExecutionCommand());
             if (!process.waitFor(3, TimeUnit.SECONDS)) {
                 process.destroy();
-                errorMessage = "Максимально доспустимое время исполнения превышено!";
+                errorMessage = "Максимально допустимое время исполнения превышено!";
                 code = StatusCode.EXECUTION_TIMEOUT;
                 return;
             }
@@ -154,10 +182,30 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
         }
     }
 
+    private void executeTest(String input) {
+        if (code == StatusCode.COMPILATION_ERROR || code == StatusCode.COMPILATION_TIMEOUT) return;
+        try {
+            writeInput(input);
+            executeSingle();
+            if (code != StatusCode.EXECUTION_SUCCESS) outputs.add(getErrorMessage());
+            else outputs.add(getOutput());
+        } catch (IOException e) {
+            e.printStackTrace();
+            outputs.add(e.getMessage());
+        }
+    }
+
     private void writeTest(Test test) throws IOException {
         File in = new File(String.format("%s\\in.txt", directory));
         FileOutputStream os = new FileOutputStream(in, false);
         os.write(test.getInput().getBytes());
+        os.close();
+    }
+
+    private void writeInput(String input) throws IOException {
+        File in = new File(String.format("%s\\in.txt", directory));
+        FileOutputStream os = new FileOutputStream(in, false);
+        os.write(input.getBytes());
         os.close();
     }
 
@@ -183,7 +231,7 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
             default:
                 pattern = "%s";
         }
-        return String.format(pattern, errorMessage);
+        return String.format(pattern, errorMessage.trim());
     }
 
     private void clear() {
@@ -197,19 +245,10 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
         }
     }
 
-    private void writeInput(String input) throws IOException {
-        File file = new File(String.format("%s\\in.txt", directory));
-        if (file.createNewFile()) {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-            writer.write(input);
-            writer.close();
-        }
-    }
-
     private boolean initErrorMessage(int exitCode) {
         boolean hasError = false;
         String error = getFile("err.log");
-        if (error.equals("") && exitCode != 0){
+        if (error.equals("") && exitCode != 0) {
             hasError = true;
             errorMessage = getFile("out.txt");
             if (getExtension() == Extension.CSHARP)
@@ -229,7 +268,7 @@ public abstract class CodeProcessor implements IResponseEntityConverter<String>,
             List<String> lines = reader.lines().collect(Collectors.toList());
             reader.close();
             return String.join("\n", lines);
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return "";
         }

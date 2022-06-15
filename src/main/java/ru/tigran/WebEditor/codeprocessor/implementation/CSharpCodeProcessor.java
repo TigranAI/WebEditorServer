@@ -24,8 +24,7 @@ public class CSharpCodeProcessor extends CodeProcessor {
     @Override
     protected String[] getExecutionCommand() {
         return new String[] {
-                String.format("%s\\solution.exe", directory),
-                "/utf8output"
+                String.format("%s\\solution.exe", directory)
         };
     }
 
